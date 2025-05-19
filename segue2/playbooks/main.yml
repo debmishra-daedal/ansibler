@@ -1,0 +1,5 @@
+---
+- name: Update server
+  import_playbook: update_server.yml
+- name: Update environment variables
+  import_playbook: update_var.yml

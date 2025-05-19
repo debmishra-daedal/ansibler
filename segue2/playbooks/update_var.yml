@@ -1,0 +1,37 @@
+---
+# This playbook is used to update environment variables across all environments
+- name: Update environment variables
+  hosts: dev,test
+  # vars_files:
+  #   - ../group_vars/all.yml
+  #   - ../host_vars/{{ inventory_hostname }}.yml
+  #   - ../host_vars/{{ inventory_hostname }}_vault.yml
+  tasks:
+    # Check connection server
+    - name: Show which host is being configured
+      debug:
+        msg: "Connecting to {{ inventory_hostname }} ({{ ansible_host }})"
+    # Check passwords
+    - name: Debug become password (for troubleshooting only-remove in production)
+      debug:
+        var: test_var
+    # Check if .env file exists in home directory
+    - name: Ensure .env file exists in home directory
+      file:
+        path: "{{ ansible_env.HOME }}/.env"
+        state: touch
+        mode: '0644'
+    # Copy environment file to host's .env
+    - name: Copy environment file to host's .env
+      copy:
+        src: "{{ item }}"
+        dest: "{{ ansible_env.HOME }}/{{ item | basename }}"
+        owner: "{{ ansible_user | default(ansible_user_id) }}"
+        mode: '0744'
+      with_fileglob: "{{ playbook_dir }}/files/env/*_{{ inventory_hostname }}.env"
+      when: (lookup('fileglob', playbook_dir + '/files/env/*_' + inventory_hostname + '.env', errors='ignore') | length) > 0
+    # Set environment variables
+    - name: Run env role
+      import_role:
+        name: env
+

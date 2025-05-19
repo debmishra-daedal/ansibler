@@ -1,0 +1,37 @@
+---
+# Update the system to the latest version
+- name: Update apt package index
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages to the latest version
+  apt:
+    upgrade: dist
+  register: upgrade_result
+
+# Install packages from install-packages-ubuntu.txt
+- name: Install packages from file
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_lines: cat "{{ role_path }}/files/install-packages-ubuntu.txt"
+  when: upgrade_result is succeeded
+
+# Create folder directory if it doesn't exist
+- name: Create required directories in home directory
+  file:
+    path: "{{ ansible_env.HOME }}/{{ item }}"
+    state: directory
+    mode: '0751'
+  loop:
+    - data
+    - media
+    - shared
+    - sourcecode
+
+# Change the mode of one folder "shared"  to 0777 if it exists
+- name: Ensure "shared" directory has mode 0777
+  file:
+    path: "{{ ansible_env.HOME }}/shared"
+    mode: '0777'
+    state: directory

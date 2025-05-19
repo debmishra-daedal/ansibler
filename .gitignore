@@ -1,0 +1,13 @@
+# Ignore vs code settings and workspace files
+.vscode/
+*.code-workspace
+# Ignore all vault files in root and all subdirectories
+vault_pass.txt
+**/*.vault
+#Ignore log files
+**/*.log
+#Remove the folder .venv and all its contents
+.venv/
+.ansible/
+#Ignore all files and folders under the collections directory
+**/collections/

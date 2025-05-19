@@ -1,0 +1,24 @@
+---
+# This playbook is used to update the server configuration across all environments
+- name: Deploy server configuration to all environments
+  hosts: dev, test
+  ## Variable setup
+  # vars:
+  #   vault_become_password: "raspberry"
+  ## vars_files:
+  #   - ../group_vars/all.yml
+  #   - ../host_vars/{{ inventory_hostname }}.yml
+  #   - ../host_vars/{{ inventory_hostname }}_vault.yml
+  tasks:
+    - name: Show which host is being configured
+      debug:
+        msg: "Connecting to {{ inventory_hostname }} ({{ ansible_host }})"
+    - name: Debug become password (for troubleshooting only-remove in production)
+      debug:
+        var: test_var
+    - name: Debug ansible lookup paths
+      debug:
+        msg: "{{ lookup('env', 'PWD') }}"
+    # - name: Run server role
+    #   import_role:
+    #     name: server

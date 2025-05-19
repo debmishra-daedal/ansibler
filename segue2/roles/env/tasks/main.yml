@@ -1,0 +1,59 @@
+---
+# Copy the script files from ../scripts to the home directory
+- name: Copy all files from ../files to home directory
+  copy:
+    src: "../files/"
+    dest: "{{ ansible_env.HOME }}/"
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    directory_mode: '0755'
+    remote_src: no
+  with_fileglob:
+    - "../files/*.sh"
+  loop_control:
+    loop_var: script_file
+
+# Run the unset_env.sh script in the remote hosts
+- name: Check if unset_envs.sh exists and is executable
+  stat:
+    path: "{{ ansible_env.HOME }}/unset_envs.sh"
+  register: unset_envs_stat
+
+- name: Fail if unset_envs.sh does not exist
+  fail:
+    msg: "The unset_envs.sh script does not exist in {{ ansible_env.HOME }}"
+  when: not unset_envs_stat.stat.exists
+
+- name: Fail if unset_envs.sh is not executable
+  fail:
+    msg: "The unset_envs.sh script exists but is not executable. Please set the correct permissions."
+  when: unset_envs_stat.stat.exists and not unset_envs_stat.stat.mode | int(base=8) is search('..7$|.7.$|7..')
+
+- name: Run unset_envs.sh script
+  shell: "{{ ansible_env.HOME }}/unset_envs.sh"
+  args:
+    executable: /bin/bash
+  when: unset_envs_stat.stat.exists and unset_envs_stat.stat.mode | int(base=8) is search('..7$|.7.$|7..')
+
+# Run the load_env.sh script in the remote hosts
+- name: Check if load_envs.sh exists and is executable
+  stat:
+    path: "{{ ansible_env.HOME }}/load_envs.sh"
+  register: load_envs_stat
+
+- name: Fail if load_envs.sh does not exist
+  fail:
+    msg: "The load_envs.sh script does not exist in {{ ansible_env.HOME }}"
+  when: not load_envs_stat.stat.exists
+
+- name: Fail if load_envs.sh is not executable
+  fail:
+    msg: "The load_envs.sh script exists but is not executable. Please set the correct permissions."
+  when: load_envs_stat.stat.exists and not load_envs_stat.stat.mode | int(base=8) is search('..7$|.7.$|7..')
+
+- name: Run load_envs.sh script
+  shell: "{{ ansible_env.HOME }}/load_envs.sh"
+  args:
+    executable: /bin/bash
+  when: load_envs_stat.stat.exists and load_envs_stat.stat.mode | int(base=8) is search('..7$|.7.$|7..')
